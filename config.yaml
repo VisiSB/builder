@@ -1,0 +1,33 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: quay-deployment
+  labels:
+    app: quay
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: quay
+  template:
+    metadata:
+      labels:
+        app: quay
+    spec:
+      containers:
+      - image: quay.io/coreos/quay-builder:v2.9.2
+        name: builder
+        ports:
+        - containerPort: 80
+        env:
+        - name: SERVER
+          value: "ws://[QUAY_IP]"
+        volumeMounts:
+        - mountPath: /var/run/docker.sock
+          name: docker-sock-volume
+      imagePullSecrets:
+        - name: pull-secret
+      volumes:
+      - name: docker-sock-volume
+        hostpath:
+          path: /var/run/docker.sock
